@@ -1,0 +1,28 @@
+{
+  "name": "git",
+  "version": "1.0.0",
+  "description": "ФИО Кузьмичева Анна Дмитриевна",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "start:task4": "ts-node task4.ts",
+    "start:task5": "ts-node task5.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnnR31/TProgramming_2026.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AnnR31/TProgramming_2026/issues"
+  },
+  "homepage": "https://github.com/AnnR31/TProgramming_2026#readme",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}

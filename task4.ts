@@ -1,7 +1,7 @@
-const a = 0.05;
-const b = 0.06;
+export const a = 0.05;
+export const b = 0.06;
 
-function calculate(x) {
+export function calculate(x:number) {
     return Math.acos(x * x - b * b) / Math.asin(x * x - a * a);
 }
 
@@ -18,3 +18,5 @@ console.log("Задача Б:");
 for (let i = 0; i < taskB.length; i++) {
     console.log(calculate(taskB[i]));
 }
+
+
