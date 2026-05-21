@@ -1,17 +1,23 @@
 const a = 0.05;
 const b = 0.06;
 
+function calculate(x: number, a: number, b: number): number {
+    return Math.acos(x * x - b * b) / Math.asin(x * x - a * a);
+}
+
 // Задача А
-console.log(Math.acos(0.2*0.2 - 0.06*0.06) / Math.asin(0.2*0.2 - 0.05*0.05));
-console.log(Math.acos(0.35*0.35 - 0.06*0.06) / Math.asin(0.35*0.35 - 0.05*0.05));
-console.log(Math.acos(0.5*0.5 - 0.06*0.06) / Math.asin(0.5*0.5 - 0.05*0.05));
-console.log(Math.acos(0.65*0.65 - 0.06*0.06) / Math.asin(0.65*0.65 - 0.05*0.05));
-console.log(Math.acos(0.8*0.8 - 0.06*0.06) / Math.asin(0.8*0.8 - 0.05*0.05));
-console.log(Math.acos(0.95*0.95 - 0.06*0.06) / Math.asin(0.95*0.95 - 0.05*0.05));
+console.log("\nЗадача А")
+console.log(calculate(0.2, a, b));
+console.log(calculate(0.35, a, b));
+console.log(calculate(0.5, a, b));
+console.log(calculate(0.65, a, b));
+console.log(calculate(0.8, a, b));
+console.log(calculate(0.95, a, b));
 
 // Задача Б
-console.log(Math.acos(0.15*0.15 - 0.06*0.06) / Math.asin(0.15*0.15 - 0.05*0.05));
-console.log(Math.acos(0.26*0.26 - 0.06*0.06) / Math.asin(0.26*0.26 - 0.05*0.05));
-console.log(Math.acos(0.37*0.37 - 0.06*0.06) / Math.asin(0.37*0.37 - 0.05*0.05));
-console.log(Math.acos(0.48*0.48 - 0.06*0.06) / Math.asin(0.48*0.48 - 0.05*0.05));
-console.log(Math.acos(0.56*0.56 - 0.06*0.06) / Math.asin(0.56*0.56 - 0.05*0.05));
+console.log("\nЗадача Б")
+console.log(calculate(0.15, a, b));
+console.log(calculate(0.26, a, b));
+console.log(calculate(0.37, a, b));
+console.log(calculate(0.48, a, b));
+console.log(calculate(0.56, a, b));
