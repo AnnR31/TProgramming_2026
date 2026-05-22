@@ -1,28 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { calculate, a, b } from './task4';
+import { calculate, taskA, taskB } from './task4';
 
-describe('calculate', () => {
-  const validInputs = [0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 0.15, 0.26, 0.37, 0.48, 0.56];
+describe('task4', () => {
+    const a = 0.05;
+    const b = 0.06;
 
-  it('возвращает конечные числа для всех значений из условия', () => {
-    for (const x of validInputs) {
-      expect(Number.isFinite(calculate(x))).toBe(true);
-    }
-  });
+    it('taskA возвращает 6 результатов, все конечные числа', () => {
+        const results = taskA(a, b);
+        expect(results.length).toBe(6);
+        results.forEach(res => {
+            expect(Number.isFinite(res)).toBe(true);
+        });
+    });
 
-  it('возвращает Infinity при x = a (0.05)', () => {
-    expect(calculate(a)).toBe(Infinity);
-  });
+    it('taskB возвращает 5 результатов, все конечные числа', () => {
+        const results = taskB(a, b);
+        expect(results.length).toBe(5);
+        results.forEach(res => {
+            expect(Number.isFinite(res)).toBe(true);
+        });
+    });
 
-  it('возвращает конечное число при x = b (0.06)', () => {
-    expect(Number.isFinite(calculate(b))).toBe(true);
-  });
-
-  it('возвращает число при x = 1', () => {
-    expect(Number.isFinite(calculate(1))).toBe(true);
-  });
-
-  it('возвращает число при x = 0', () => {
-    expect(Number.isFinite(calculate(0))).toBe(true);
-  });
+    it('calculate даёт Infinity при x = a', () => {
+        expect(calculate(a, a, b)).toBe(Infinity);
+    });
 });
