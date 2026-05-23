@@ -28,5 +28,6 @@ function taskB(a: number, b: number): void {
 xn = 0.5;
 xk = 1.0;
 dx = 0.2;
+
 taskA(0.05, 0.06);
 taskB(0.05, 0.06);

@@ -1,23 +1,26 @@
 import { Hero, Knight, Archer, Mage } from './Hero';
+import { Logger } from './logger';
 
 export class Game {
-    public heroes: Hero[];
+    private heroes: Hero[];
+    private logger: Logger;
 
-    constructor(heroes: Hero[]) {
+    constructor(heroes: Hero[], logger?: Logger) {
         this.heroes = heroes;
+        this.logger = logger || new Logger();
     }
 
     public start(): void {
         let round = 1;
         while (this.heroes.length > 1) {
-            console.log(`\n=== Кон ${round} ===`);
+            this.logger.log(`\n=== Кон ${round} ===`);
             let shuffled = this.shuffle([...this.heroes]);
             let winners: Hero[] = [];
             for (let i = 0; i < shuffled.length; i += 2) {
                 if (i + 1 >= shuffled.length) break;
                 let a = shuffled[i];
                 let b = shuffled[i + 1];
-                console.log(`(${a.getType()}) ${a.getName()} vs (${b.getType()}) ${b.getName()}`);
+                this.logger.log(`(${a.getType()}) ${a.getName()} vs (${b.getType()}) ${b.getName()}`);
                 let winner = this.fight(a, b);
                 winners.push(winner);
             }
@@ -25,7 +28,7 @@ export class Game {
             round++;
         }
         if (this.heroes.length === 1) {
-            console.log(`\nПобедитель: ${this.heroes[0].getName()} (${this.heroes[0].getType()})`);
+            this.logger.log(`\nПобедитель: ${this.heroes[0].getName()} (${this.heroes[0].getType()})`);
         }
     }
 
@@ -35,19 +38,19 @@ export class Game {
         let skipA = false, skipB = false;
 
         while (a.isAlive() && b.isAlive()) {
-            a.applyEffects();
-            b.applyEffects();
+            a.applyEffects(this.logger);
+            b.applyEffects(this.logger);
 
             if (!skipA) {
                 let choice = this.chooseAction(a);
                 if (choice === "ice") {
-                    a.useIceArrows(b);
+                    a.useIceArrows(b, this.logger);
                 } else {
                     let useAbility = (choice === "ability");
-                    a.attack(b, useAbility);
+                    a.attack(b, useAbility, this.logger);
                 }
             } else {
-                console.log(`${a.getName()} пропускает ход (заворожение)`);
+                this.logger.log(`${a.getName()} пропускает ход (заворожение)`);
                 skipA = false;
             }
             if (!b.isAlive()) break;
@@ -60,13 +63,13 @@ export class Game {
             if (!skipB) {
                 let choice = this.chooseAction(b);
                 if (choice === "ice") {
-                    b.useIceArrows(a);
+                    b.useIceArrows(a, this.logger);
                 } else {
                     let useAbility = (choice === "ability");
-                    b.attack(a, useAbility);
+                    b.attack(a, useAbility, this.logger);
                 }
             } else {
-                console.log(`${b.getName()} пропускает ход (заворожение)`);
+                this.logger.log(`${b.getName()} пропускает ход (заворожение)`);
                 skipB = false;
             }
             if (!a.isAlive()) break;
@@ -76,15 +79,16 @@ export class Game {
                 b.clearCharm();
             }
         }
+
         let winner = a.isAlive() ? a : b;
         let loser = a.isAlive() ? b : a;
-        console.log(`${loser.getName()} погибает`);
+        this.logger.log(`${loser.getName()} погибает`);
         return winner;
     }
 
-    private chooseAction(hero: Hero): string {
+    private chooseAction(hero: Hero): "normal" | "ability" | "ice" {
         let r = Math.random();
-        if (hero.iceArrowsLeft > 0 && r < 0.33) return "ice";
+        if (hero["iceArrowsLeft"] > 0 && r < 0.33) return "ice";
         if (r < 0.66) return "ability";
         return "normal";
     }
@@ -95,6 +99,10 @@ export class Game {
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
+    }
+
+    public getLogs(): string[] {
+        return this.logger.getLogs();
     }
 }
 

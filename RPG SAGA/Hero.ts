@@ -1,20 +1,26 @@
-export class Hero {
-    public name: string;
-    public health: number;
-    public strength: number;
-    public alive: boolean = true;
+import { Logger } from './logger';
 
-    public fireTurns: number = 0;
-    public iceTurns: number = 0;
-    public iceDamage: number = 0;
-    
-    public iceArrowsLeft: number = 1;  
+export abstract class Hero {
+    protected name: string;
+    protected health: number;
+    protected strength: number;
+    protected alive: boolean = true;
+
+    protected fireTurns: number = 0;
+    protected iceTurns: number = 0;
+    protected iceDamage: number = 0;
+    protected iceArrowsLeft: number = 1;  
 
     constructor(name: string, health: number, strength: number) {
         this.name = name;
         this.health = health;
         this.strength = strength;
     }
+
+    public getName(): string { return this.name; }
+    public getHealth(): number { return this.health; }
+    public getStrength(): number { return this.strength; }
+    public isAlive(): boolean { return this.alive; }
 
     public takeDamage(amount: number): void {
         if (!this.alive) return;
@@ -25,33 +31,33 @@ export class Hero {
         }
     }
 
-    public attack(target: Hero, useAbility: boolean): void {
-        let damage = this.strength;
+    public attack(target: Hero, useAbility: boolean, logger: Logger): void {
         if (useAbility) {
-            this.useAbility(target);
-            return;
+            this.useAbility(target, logger);
+        } else {
+            let damage = this.strength;
+            logger.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
+            target.takeDamage(damage);
         }
-        console.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
-        target.takeDamage(damage);
     }
 
-    public useAbility(target: Hero): void {
+    protected useAbility(target: Hero, logger: Logger): void {
         let damage = this.strength;
-        console.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
+        logger.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
         target.takeDamage(damage);
     }
 
-    public useIceArrows(target: Hero): void {
+    public useIceArrows(target: Hero, logger: Logger): void {
         if (this.iceArrowsLeft <= 0) {
-            console.log(`${this.name} не может больше использовать ледяные стрелы`);
+            logger.log(`${this.name} не может больше использовать ледяные стрелы`);
             return;
         }
         let damage = this.strength;
         target.takeDamage(damage);
-        console.log(`${this.name} (${this.getType()}) использует Ледяные стрелы! Наносит ${damage} урона и замедляет ${target.getName()}`);
+        logger.log(`${this.name} (${this.getType()}) использует Ледяные стрелы! Наносит ${damage} урона и замедляет ${target.getName()}`);
         
         if (target instanceof Mage) {
-            console.log(`${target.getName()} (Маг) невосприимчив к ледяным стрелам!`);
+            logger.log(`${target.getName()} (Маг) невосприимчив к ледяным стрелам!`);
             this.iceArrowsLeft--;
             return;
         }
@@ -60,22 +66,18 @@ export class Hero {
         this.iceArrowsLeft--;
     }
 
-    public applyEffects(): void {
+    public applyEffects(logger: Logger): void {
         if (this.fireTurns > 0) {
             this.takeDamage(2);
-            console.log(`${this.name} получает 2 урона от огня.`);
+            logger.log(`${this.name} получает 2 урона от огня.`);
             this.fireTurns--;
         }
         if (this.iceTurns > 0) {
             this.takeDamage(this.iceDamage);
-            console.log(`${this.name} получает ${this.iceDamage} урона от ледяных стрел.`);
+            logger.log(`${this.name} получает ${this.iceDamage} урона от ледяных стрел.`);
             this.iceTurns--;
         }
     }
-
-    public getName(): string { return this.name; }
-    public getHealth(): number { return this.health; }
-    public isAlive(): boolean { return this.alive; }
 
     public getType(): string {
         if (this instanceof Knight) return "Рыцарь";
@@ -96,26 +98,27 @@ export class Knight extends Hero {
     constructor(name: string, health: number, strength: number) {
         super(name, health, strength);
     }
-    public useAbility(target: Hero): void {
+    protected useAbility(target: Hero, logger: Logger): void {
         let damage = Math.floor(this.strength * 1.3);
-        console.log(`${this.name} (Рыцарь) использует Удар возмездия и наносит ${damage} урона ${target.getName()}`);
+        logger.log(`${this.name} (Рыцарь) использует Удар возмездия и наносит ${damage} урона ${target.getName()}`);
         target.takeDamage(damage);
     }
 }
 
 export class Archer extends Hero {
     private usedFire: boolean = false;
+
     constructor(name: string, health: number, strength: number) {
         super(name, health, strength);
         this.iceArrowsLeft = 2;
     }
-    public useAbility(target: Hero): void {
+    protected useAbility(target: Hero, logger: Logger): void {
         if (!this.usedFire) {
             this.usedFire = true;
             target.fireTurns = 2;
-            console.log(`${this.name} (Лучник) использует Огненные стрелы! ${target.getName()} загорается.`);
+            logger.log(`${this.name} (Лучник) использует Огненные стрелы! ${target.getName()} загорается.`);
         } else {
-            console.log(`${this.name} (Лучник) наносит ${this.strength} урона ${target.getName()}`);
+            logger.log(`${this.name} (Лучник) наносит ${this.strength} урона ${target.getName()}`);
             target.takeDamage(this.strength);
         }
     }
@@ -127,12 +130,13 @@ export class Archer extends Hero {
 
 export class Mage extends Hero {
     private charmed: boolean = false;
+
     constructor(name: string, health: number, strength: number) {
         super(name, health, strength);
     }
-    public useAbility(target: Hero): void {
+    protected useAbility(target: Hero, logger: Logger): void {
         this.charmed = true;
-        console.log(`${this.name} (Маг) использует Заворожение! ${target.getName()} пропустит ход.`);
+        logger.log(`${this.name} (Маг) использует Заворожение! ${target.getName()} пропустит ход.`);
     }
     public isCharmed(): boolean { return this.charmed; }
     public clearCharm(): void { this.charmed = false; }
@@ -142,7 +146,7 @@ export class Mage extends Hero {
     }
 }
 
-const NAMES = ["Артур", "Эльдар", "Гэндальф", "Вильямс", "Леголас", "Мерлин", "Ланселот", "Гимли"];
+const NAMES: string[] = ["Артур", "Эльдар", "Гэндальф", "Вильямс", "Леголас", "Мерлин", "Ланселот", "Гимли"];
 
 export function createHero(type: string, name: string, health: number, strength: number): Hero {
     if (type === "Knight") return new Knight(name, health, strength);
