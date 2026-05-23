@@ -1,6 +1,6 @@
-    const xn = 0.2;
-    const xk = 0.95;
-    const dx = 0.15;
+   export let xn = 0.2;
+   export let xk = 0.95;
+   export let dx = 0.15;
 export function calculate(x: number, a: number, b: number): number {
     return Math.acos(x * x - b * b) / Math.asin(x * x - a * a);
 }
@@ -26,6 +26,3 @@ export function taskB(a: number, b: number): number[] {
     results.forEach(r => console.log(r));
     return results;
 }
-
-taskA(0.05, 0.06);
-taskB(0.05, 0.06);
