@@ -1,10 +1,11 @@
 import { createRandomHeroes } from './Hero';
 import { Game } from './battle';
 
-const heroCount = 6; 
-const heroes = createRandomHeroes(heroCount);
+let heroes = createRandomHeroes(6);
 console.log(`Создано ${heroes.length} героев:`);
-heroes.forEach(h => console.log(`${h.getName()} (${h.constructor.name}) здоровье:${h.getHealth()} сила:${h.getStrength()}`));
+for (let i = 0; i < heroes.length; i++) {
+    console.log(`${heroes[i].name} (${heroes[i].getType()}) здоровье:${heroes[i].health} сила:${heroes[i].strength}`);
+}
 
-const game = new Game(heroes);
+let game = new Game(heroes);
 game.start();

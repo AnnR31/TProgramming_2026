@@ -1,122 +1,100 @@
-import { Hero, Logger, Archer, Mage, Knight } from './Hero';
+import { Hero, Knight, Archer, Mage } from './Hero';
 
 export class Game {
-    private heroes: Hero[];
-    private logger: Logger;
+    public heroes: Hero[];
 
     constructor(heroes: Hero[]) {
         this.heroes = heroes;
-        this.logger = new Logger();
     }
 
     public start(): void {
         let round = 1;
         while (this.heroes.length > 1) {
-            this.logger.add(`\n=== Кон ${round} ===`);
-            const shuffled = this.shuffle([...this.heroes]);
-            const winners: Hero[] = [];
-
+            console.log(`\n=== Кон ${round} ===`);
+            let shuffled = this.shuffle([...this.heroes]);
+            let winners: Hero[] = [];
             for (let i = 0; i < shuffled.length; i += 2) {
                 if (i + 1 >= shuffled.length) break;
-                const a = shuffled[i];
-                const b = shuffled[i + 1];
-                this.logger.add(`(${this.getType(a)}) ${a.getName()} vs (${this.getType(b)}) ${b.getName()}`);
-                const winner = this.fight(a, b);
+                let a = shuffled[i];
+                let b = shuffled[i + 1];
+                console.log(`(${a.getType()}) ${a.getName()} vs (${b.getType()}) ${b.getName()}`);
+                let winner = this.fight(a, b);
                 winners.push(winner);
             }
             this.heroes = winners;
             round++;
         }
         if (this.heroes.length === 1) {
-            this.logger.add(`\nПобедитель: ${this.heroes[0].getName()} (${this.getType(this.heroes[0])})`);
+            console.log(`\nПобедитель: ${this.heroes[0].getName()} (${this.heroes[0].getType()})`);
         }
     }
 
-    private fight(heroA: Hero, heroB: Hero): Hero {
-        heroA.resetForNewFight();
-        heroB.resetForNewFight();
+    private fight(a: Hero, b: Hero): Hero {
+        a.resetForFight();
+        b.resetForFight();
+        let skipA = false, skipB = false;
 
-        let skipA = false;
-        let skipB = false;
-
-        while (heroA.isAlive() && heroB.isAlive()) {
-            heroA.applyPeriodicEffects(this.logger);
-            heroB.applyPeriodicEffects(this.logger);
+        while (a.isAlive() && b.isAlive()) {
+            a.applyEffects();
+            b.applyEffects();
 
             if (!skipA) {
-                const action = this.chooseAction(heroA);
-                if (action === "ice") {
-                    heroA.useIceArrows(heroB, this.logger);
+                let choice = this.chooseAction(a);
+                if (choice === "ice") {
+                    a.useIceArrows(b);
                 } else {
-                    const useAbility = (action === "ability");
-                    heroA.attack(heroB, this.logger, useAbility);
+                    let useAbility = (choice === "ability");
+                    a.attack(b, useAbility);
                 }
             } else {
-                this.logger.add(`${heroA.getName()} пропускает ход (заворожение)`);
+                console.log(`${a.getName()} пропускает ход (заворожение)`);
                 skipA = false;
             }
-            if (!heroB.isAlive()) break;
+            if (!b.isAlive()) break;
 
-            if (heroA instanceof Mage && (heroA as Mage).isCharmed()) {
+            if (a instanceof Mage && a.isCharmed()) {
                 skipB = true;
-                (heroA as Mage).clearCharm();
+                a.clearCharm();
             }
 
             if (!skipB) {
-                const action = this.chooseAction(heroB);
-                if (action === "ice") {
-                    heroB.useIceArrows(heroA, this.logger);
+                let choice = this.chooseAction(b);
+                if (choice === "ice") {
+                    b.useIceArrows(a);
                 } else {
-                    const useAbility = (action === "ability");
-                    heroB.attack(heroA, this.logger, useAbility);
+                    let useAbility = (choice === "ability");
+                    b.attack(a, useAbility);
                 }
             } else {
-                this.logger.add(`${heroB.getName()} пропускает ход (заворожение)`);
+                console.log(`${b.getName()} пропускает ход (заворожение)`);
                 skipB = false;
             }
-            if (!heroA.isAlive()) break;
+            if (!a.isAlive()) break;
 
-            if (heroB instanceof Mage && (heroB as Mage).isCharmed()) {
+            if (b instanceof Mage && b.isCharmed()) {
                 skipA = true;
-                (heroB as Mage).clearCharm();
+                b.clearCharm();
             }
         }
-
-        const winner = heroA.isAlive() ? heroA : heroB;
-        const loser = heroA.isAlive() ? heroB : heroA;
-        this.logger.add(`${loser.getName()} погибает`);
+        let winner = a.isAlive() ? a : b;
+        let loser = a.isAlive() ? b : a;
+        console.log(`${loser.getName()} погибает`);
         return winner;
     }
 
-    private chooseAction(hero: Hero): "normal" | "ability" | "ice" {
-        const rand = Math.random();
-        const hasIce = (hero as any).iceArrowsLeft > 0;
-        if (hasIce && rand < 0.33) {
-            return "ice";
-        } else if (rand < 0.66) {
-            return "ability";
-        } else {
-            return "normal";
-        }
+    private chooseAction(hero: Hero): string {
+        let r = Math.random();
+        if (hero.iceArrowsLeft > 0 && r < 0.33) return "ice";
+        if (r < 0.66) return "ability";
+        return "normal";
     }
 
-    private shuffle<T>(arr: T[]): T[] {
+    private shuffle(arr: any[]): any[] {
         for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            let j = Math.floor(Math.random() * (i + 1));
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
-    }
-
-    private getType(hero: Hero): string {
-        if (hero instanceof Knight) return "Рыцарь";
-        if (hero instanceof Archer) return "Лучник";
-        if (hero instanceof Mage) return "Маг";
-        return "Неизвестный";
-    }
-
-    public getLogs(): string[] {
-        return this.logger.get();
     }
 }
 
