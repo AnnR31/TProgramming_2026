@@ -1,11 +1,11 @@
+    const xn = 0.2;
+    const xk = 0.95;
+    const dx = 0.15;
 export function calculate(x: number, a: number, b: number): number {
     return Math.acos(x * x - b * b) / Math.asin(x * x - a * a);
 }
 
 export function taskA(a: number, b: number): number[] {
-    const xn = 0.2;
-    const xk = 0.95;
-    const dx = 0.15;
     const results: number[] = [];
     for (let x = xn; x <= xk + 1e-9; x += dx) {
         results.push(calculate(x, a, b));  
@@ -27,7 +27,5 @@ export function taskB(a: number, b: number): number[] {
     return results;
 }
 
-const a = 0.05;
-const b = 0.06;
-taskA(a, b);
-taskB(a, b);
+taskA(0.05, 0.06);
+taskB(0.05, 0.06);

@@ -1,11 +1,12 @@
+    const xn = 0.2;
+    const xk = 0.95;
+    const dx = 0.15;
+
 function calculate(x: number, a: number, b: number): number {
     return Math.acos(x * x - b * b) / Math.asin(x * x - a * a);
 }
 
 function taskA(a: number, b: number): void {
-    const xn = 0.2;
-    const xk = 0.95;
-    const dx = 0.15;
     console.log(`\nЗадача А (a=${a}, b=${b}):`);
     console.log(calculate(xn, a, b));
     console.log(calculate(xn + dx, a, b));
@@ -25,7 +26,5 @@ function taskB(a: number, b: number): void {
     console.log(calculate(x5, a, b));
 }
 
-const a = 0.05;
-const b = 0.06;
-taskA(a, b);
-taskB(a, b);
+taskA(0.05, 0.06);
+taskB(0.05, 0.06);
