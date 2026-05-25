@@ -1,148 +1,100 @@
-import { Logger } from './logger';
+export class Hero {
+    private name:string;
+    private health: number;
+    private strength: number;
+    private alive: boolean = true;
+    burns: boolean = false;
+    shouldSkip: boolean = false;
 
-export abstract class Hero {
-    protected name: string;
-    protected health: number;
-    protected strength: number;
-    protected alive: boolean = true;
+    private type: string = "";
 
-    protected fireTurns: number = 0;
-    protected iceTurns: number = 0;
-    protected iceDamage: number = 0;
-    protected iceArrowsLeft: number = 1;  
-
-    constructor(name: string, health: number, strength: number) {
+    constructor(name: string, health: number, strength: number, type: string) {
         this.name = name;
         this.health = health;
         this.strength = strength;
+        this.type = type;
     }
 
-    public getName(): string { return this.name; }
-    public getHealth(): number { return this.health; }
-    public getStrength(): number { return this.strength; }
-    public isAlive(): boolean { return this.alive; }
+    getName(): string { return this.name; }
+    getHealth(): number { return this.health; }
+    getStrength(): number { return this.strength; }
+    isAlive(): boolean { return this.alive; }
+    getType(): string { return this.type; }
 
-    public takeDamage(amount: number): void {
+    takeDamage(dmg: number): void {
         if (!this.alive) return;
-        this.health -= amount;
+        this.health -= dmg;
         if (this.health <= 0) {
             this.health = 0;
             this.alive = false;
         }
+    }    
+
+    burning():void{
+        console.log(`${this.name} (${this.type}) горит получает и урон 2 ед.`);
+        this.takeDamage(2);
     }
 
-    public attack(target: Hero, useAbility: boolean, logger: Logger): void {
-        if (useAbility) {
-            this.useAbility(target, logger);
+    attack(target: Hero): void {
+        let damage = this.strength;
+        console.log(`${this.name} (${this.type}) наносит ${damage} урона ${target.getName()}`);
+        target.takeDamage(damage);
+        }
+     UseSkil(target: Hero): void{
+        console.log() ;
+     }
+
+    takeTurn(target: Hero, skillChance: number): void {
+        if(this.burns) this.burning();
+        if (!this.isAlive()) return;
+        if (this.shouldSkip) {
+            console.log(`${this.getName()} пропускает ход из-за заворожения`);
+            return;
+        }
+        if (Math.random() < skillChance) {
+            this.UseSkil(target);
         } else {
-            let damage = this.strength;
-            logger.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
-            target.takeDamage(damage);
+            this.attack(target);
         }
-    }
-
-    protected useAbility(target: Hero, logger: Logger): void {
-        let damage = this.strength;
-        logger.log(`${this.name} (${this.getType()}) наносит ${damage} урона ${target.getName()}`);
-        target.takeDamage(damage);
-    }
-
-    public useIceArrows(target: Hero, logger: Logger): void {
-        if (this.iceArrowsLeft <= 0) {
-            logger.log(`${this.name} не может больше использовать ледяные стрелы`);
-            return;
-        }
-        let damage = this.strength;
-        target.takeDamage(damage);
-        logger.log(`${this.name} (${this.getType()}) использует Ледяные стрелы! Наносит ${damage} урона и замедляет ${target.getName()}`);
-        
-        if (target instanceof Mage) {
-            logger.log(`${target.getName()} (Маг) невосприимчив к ледяным стрелам!`);
-            this.iceArrowsLeft--;
-            return;
-        }
-        target.iceTurns = 3;
-        target.iceDamage += 2;
-        this.iceArrowsLeft--;
-    }
-
-    public applyEffects(logger: Logger): void {
-        if (this.fireTurns > 0) {
-            this.takeDamage(2);
-            logger.log(`${this.name} получает 2 урона от огня.`);
-            this.fireTurns--;
-        }
-        if (this.iceTurns > 0) {
-            this.takeDamage(this.iceDamage);
-            logger.log(`${this.name} получает ${this.iceDamage} урона от ледяных стрел.`);
-            this.iceTurns--;
-        }
-    }
-
-    public getType(): string {
-        if (this instanceof Knight) return "Рыцарь";
-        if (this instanceof Archer) return "Лучник";
-        if (this instanceof Mage) return "Маг";
-        return "Герой";
-    }
-
-    public resetForFight(): void {
-        this.fireTurns = 0;
-        this.iceTurns = 0;
-        this.iceDamage = 0;
-        this.iceArrowsLeft = (this instanceof Archer) ? 2 : 1;
     }
 }
 
 export class Knight extends Hero {
     constructor(name: string, health: number, strength: number) {
-        super(name, health, strength);
+        super(name, health, strength, "Рыцарь");
     }
-    protected useAbility(target: Hero, logger: Logger): void {
-        let damage = Math.floor(this.strength * 1.3);
-        logger.log(`${this.name} (Рыцарь) использует Удар возмездия и наносит ${damage} урона ${target.getName()}`);
+    UseSkil(target: Hero): void {
+        let damage = Math.floor(this.getStrength() * 1.3);
+        console.log(`${this.getName()} (Рыцарь) использует Удар возмездия и наносит ${damage} урона ${target.getName()}`);
         target.takeDamage(damage);
     }
 }
 
 export class Archer extends Hero {
-    private usedFire: boolean = false;
+    usedFire: boolean = false;
 
     constructor(name: string, health: number, strength: number) {
-        super(name, health, strength);
-        this.iceArrowsLeft = 2;
+        super(name, health, strength,"Лучник");
     }
-    protected useAbility(target: Hero, logger: Logger): void {
+    UseSkil(target: Hero): void {
         if (!this.usedFire) {
             this.usedFire = true;
-            target.fireTurns = 2;
-            logger.log(`${this.name} (Лучник) использует Огненные стрелы! ${target.getName()} загорается.`);
+            target.burns = true;
+            console.log(`${this.getHealth()} (Лучник) использует Огненные стрелы! ${target.getName()} загорается.`);
         } else {
-            logger.log(`${this.name} (Лучник) наносит ${this.strength} урона ${target.getName()}`);
-            target.takeDamage(this.strength);
+            console.log(`${this.getName()} (Лучник) наносит ${this.getStrength()} урона ${target.getName()}`);
+            target.takeDamage(this.getStrength());
         }
-    }
-    public resetForFight(): void {
-        super.resetForFight();
-        this.usedFire = false;
     }
 }
 
 export class Mage extends Hero {
-    private charmed: boolean = false;
-
     constructor(name: string, health: number, strength: number) {
-        super(name, health, strength);
+        super(name, health, strength,"Маг");
     }
-    protected useAbility(target: Hero, logger: Logger): void {
-        this.charmed = true;
-        logger.log(`${this.name} (Маг) использует Заворожение! ${target.getName()} пропустит ход.`);
-    }
-    public isCharmed(): boolean { return this.charmed; }
-    public clearCharm(): void { this.charmed = false; }
-    public resetForFight(): void {
-        super.resetForFight();
-        this.charmed = false;
+    UseSkil(target: Hero): void {
+        target.shouldSkip = true;
+        console.log(`${this.getName()} (Маг) использует Заворожение! ${target.getName()} пропустит ход.`);
     }
 }
 
@@ -156,6 +108,10 @@ export function createHero(type: string, name: string, health: number, strength:
 }
 
 export function createRandomHeroes(count: number): Hero[] {
+    if(count % 2 == 1){
+        throw new Error("Должно быть четное количество участников");
+    }
+   
     let heroes: Hero[] = [];
     let types = ["Knight", "Archer", "Mage"];
     for (let i = 0; i < count; i++) {
@@ -167,4 +123,3 @@ export function createRandomHeroes(count: number): Hero[] {
     }
     return heroes;
 }
-
